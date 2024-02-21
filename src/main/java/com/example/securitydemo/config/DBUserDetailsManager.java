@@ -9,10 +9,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsPasswordService;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
+@Component
 public class DBUserDetailsManager implements UserDetailsService, UserDetailsPasswordService {
 
     @Resource
@@ -42,6 +44,16 @@ public class DBUserDetailsManager implements UserDetailsService, UserDetailsPass
                     true,                 //用户是否未被锁定
                     authorities);         //权限列表
         }
+    }
+
+
+    //向数据库中插入新的用户信息
+    public void createUser(UserDetails userDetails) {
+        User user = new User();
+        user.setUsername(userDetails.getUsername());
+        user.setPassword(userDetails.getPassword());
+        user.setEnabled(true);
+        userMapper.insert(user);
     }
 
 }
