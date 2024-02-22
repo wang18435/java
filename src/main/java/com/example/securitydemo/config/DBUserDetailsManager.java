@@ -29,20 +29,33 @@ public class DBUserDetailsManager implements UserDetailsService, UserDetailsPass
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         QueryWrapper queryWrapper = new QueryWrapper<User>();
-        queryWrapper.eq("username",username);    //与数据库中保持一致
+        queryWrapper.eq("username", username);    //与数据库中保持一致
         User user = userMapper.selectOne(queryWrapper);
-        if(user == null){
+        if (user == null) {
             throw new UsernameNotFoundException(username);
-        }else{
-            Collection<GrantedAuthority> authorities = new ArrayList<>();
-            return new org.springframework.security.core.userdetails.User(
-                    user.getUsername(),
-                    user.getPassword(),
-                    user.getEnabled(),
-                    true, //用户账号是否过期
-                    true,                 //用户凭证是否过期
-                    true,                 //用户是否未被锁定
-                    authorities);         //权限列表
+        } else {
+//            Collection<GrantedAuthority> authorities = new ArrayList<>();
+////            authorities.add(()->"USER_LIST");
+//            authorities.add(()->"USER_ADD");
+//            return new org.springframework.security.core.userdetails.User(
+//                    user.getUsername(),
+//                    user.getPassword(),
+//                    user.getEnabled(),
+//                    true, //用户账号是否过期
+//                    true,                 //用户凭证是否过期
+//                    true,                 //用户是否未被锁定
+//                    authorities);         //权限列表
+
+            return org.springframework.security.core.userdetails.User
+                    .withUsername(user.getUsername())
+                    .password(user.getPassword())
+                    .disabled(!user.getEnabled())
+                    .credentialsExpired(false)
+                    .accountLocked(false)
+//                    .roles("ADMIN")                  //roles和authorities不可以同时使用，会被覆盖掉
+                    .authorities("USER_ADD","USER_UPDATE")
+                    .build()
+                    ;
         }
     }
 

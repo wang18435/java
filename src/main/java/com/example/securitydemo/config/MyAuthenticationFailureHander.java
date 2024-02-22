@@ -27,5 +27,6 @@ public class MyAuthenticationFailureHander implements AuthenticationFailureHandl
 
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().println(json);
+
     }
 }

@@ -2,6 +2,7 @@ package com.example.securitydemo.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -11,6 +12,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
+@EnableMethodSecurity           //开启基于方法的授权
 //@EnableWebSecurity      //开启SpringSecurity的自动配置（在SpringBoot项目中可以省略此注解）
 public class WebSecurityConfig {
 
@@ -21,6 +23,11 @@ public class WebSecurityConfig {
         //开启授权保护
         http.authorizeRequests(
                 authorize -> authorize
+                        //只有User_List权限的用户可以访问/user/list
+//                        .requestMatchers("/user/List").hasAuthority("USER_LIST")
+//                        //具有USER_ADD权限的用户/user/add
+//                        .requestMatchers("/user/add").hasAuthority("USER_ADD")
+//                        .requestMatchers("/user/**").hasRole("ADMIN")
                         //对所有请求开启授权保护
                         .anyRequest()
                         //已认证的请求会被自动授权
@@ -47,8 +54,9 @@ public class WebSecurityConfig {
 //                .httpBasic(withDefaults());//基本授权方式
 
         //未认证的处理
-        http.exceptionHandling(except ->{
-            except.authenticationEntryPoint(new MyAuthenticationEntryPoint());
+        http.exceptionHandling(except -> {
+            except.authenticationEntryPoint(new MyAuthenticationEntryPoint())
+                    .accessDeniedHandler(new MyAccessDeniedHandler());
         });
 
         http.sessionManagement(session -> {
