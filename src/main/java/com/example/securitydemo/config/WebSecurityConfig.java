@@ -25,22 +25,45 @@ public class WebSecurityConfig {
                         .anyRequest()
                         //已认证的请求会被自动授权
                         .authenticated()
-                )
+        );
 //                .formLogin(withDefaults());//表单授权方式
-        .formLogin(form -> {
-           form.loginPage("/login").permitAll()
-                   //下面是用来自定义表单的用户名参数
-                   .usernameParameter("username")
-                   //配置自定义表单的密码参数
-                   .passwordParameter("password");
+
+        http.formLogin(form -> {
+            form.loginPage("/login").permitAll()
+                    //下面是用来自定义表单的用户名参数和密码参数，默认值是username和password
+                    .usernameParameter("username")
+                    .passwordParameter("password")
+                    .failureUrl("/login?failure")   //检查失败时跳转的地址，默认值是error
+                    .successHandler(new MyAuthenticationSuccesHander())      //认证成功时的处理
+                    .failureHandler(new MyAuthenticationFailureHander())
+            ;
+        });
+
+
+        //注销成功时的处理
+        http.logout(logout -> {
+            logout.logoutSuccessHandler(new MyLogoutSuccessHandler());
         });
 //                .httpBasic(withDefaults());//基本授权方式
 
+        //未认证的处理
+        http.exceptionHandling(except ->{
+            except.authenticationEntryPoint(new MyAuthenticationEntryPoint());
+        });
+
+        http.sessionManagement(session -> {
+            session.maximumSessions(1).expiredSessionStrategy(new MySessionInformationExpiredStrategy());
+        });
+
+        //跨域
+        http.cors(withDefaults());
+
+        //关闭CSRF防御
         http.csrf(csrf -> csrf.disable());
         return http.build();
 
-    //--------------------------------------------------------------------------------------------------
-    //只需要UserDetailsService一个对象，可以在DBUserDetailsManager中加注解是一样的
+        //--------------------------------------------------------------------------------------------------
+        //只需要UserDetailsService一个对象，可以在DBUserDetailsManager中加注解是一样的
 //    @Bean
 //    public UserDetailsService userDetailsService() {
 //        //创建基于数据库的用户信息管理器
